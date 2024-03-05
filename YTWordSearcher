@@ -1,0 +1,60 @@
+from youtubesearchpython import VideosSearch
+import webbrowser
+import pytube
+import os
+
+def search_youtube(query):
+    try:
+        # Search for videos related to the query
+        videos_search = VideosSearch(query, limit=1)
+        results = videos_search.result()['result']
+
+        if results:
+            # Get the first video URL
+            video_url = results[0]['link']
+            return video_url
+        else:
+            return None
+    except Exception as e:
+        print("Error occurred while searching:", e)
+        return None
+
+def play_video(video_url):
+    try:
+        # Download the video using pytube
+        youtube = pytube.YouTube(video_url)
+        video_stream = youtube.streams.filter(progressive=True, file_extension='mp4').first()
+        if video_stream:
+            print("Downloading video...")
+            video_stream.download(filename='video.mp4')
+
+            # Play the downloaded video using default media player
+            print("Playing video...")
+            os.system("start video.mp4")
+            os.remove("video.mp4")  # Remove the downloaded video after playing
+        else:
+            print("No suitable video stream found.")
+    except Exception as e:
+        print("Error occurred while playing video:", e)
+
+def main():
+    while True:
+        query = input("Enter your search query (type 'exit' to quit): ")
+        if query.lower() == 'exit':
+            break
+
+        video_url = search_youtube(query)
+        if video_url:
+            print("Opening video:", video_url)
+            # Ask if the user wants to play the video directly
+            play_option = input("Do you want to play the video directly? (yes/no): ").lower()
+            if play_option == 'yes':
+                play_video(video_url)
+            else:
+                # Open the video in the default web browser
+                webbrowser.open(video_url)
+        else:
+            print("No videos found for the given query.")
+
+if __name__ == "__main__":
+    main()
